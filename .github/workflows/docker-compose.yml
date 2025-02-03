@@ -78,6 +78,8 @@ jobs:
                 MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
                 MYSQL_DATABASE: messenger
                 MYSQL_ROOT_HOST: '%'
+              ports:
+               - "3307:3306"
               volumes:
                 - mysql-data:/var/lib/mysql
               healthcheck:
@@ -93,6 +95,8 @@ jobs:
                 - xpack.security.enabled=false
                 - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
                 - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+              ports:
+               - "9200:9200"
               volumes:
                 - elasticsearch-data:/usr/share/elasticsearch/data
               healthcheck:
