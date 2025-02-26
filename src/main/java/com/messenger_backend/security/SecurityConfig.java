@@ -1,8 +1,8 @@
 package com.messenger_backend.security;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,8 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import com.messenger_backend.service.UserService;
 
@@ -27,40 +27,40 @@ public class SecurityConfig {
 	        this.userService = userService;
 	        this.passwordEncoder = passwordEncoder;
 	    }
+
+		    @Bean
+			public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+				http
+						.csrf(csrf -> csrf.disable())
+						.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+						.authorizeHttpRequests(auth -> auth
+								.requestMatchers("/auth/**").permitAll()
+								.requestMatchers("/users/search").authenticated()
+								.requestMatchers(HttpMethod.POST, "/contacts").authenticated()
+								.anyRequest().authenticated())
+						.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				return http.build();
+			}
+
 	    @Bean
-	    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-	        // Enable CORS globally
-	        http.csrf(csrf -> csrf.disable())
-	            .cors() // Enable CORS globally
-	            .and()
-	            .authorizeHttpRequests(auth -> auth
-	                .requestMatchers("/auth/**").permitAll() // Allow auth-related routes to be public
-	                .requestMatchers("/users/search").authenticated() 
-	                .anyRequest().authenticated() // Any other request should be authenticated
-	            )
-	            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter before authentication
-	        return http.build();
-	    }
-
-    @Bean
-    AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userService)
-                .passwordEncoder(passwordEncoder)
-                .and()
-                .build();
-    }
-
-    
-    @Bean
-    public CorsFilter corsFilter() {
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowCredentials(true);
+        configuration.addAllowedOrigin("http://localhost:5173");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173");  // Allow frontend origin
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
+
+	    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder
+            .userDetailsService(userService)
+            .passwordEncoder(passwordEncoder);
+        return authenticationManagerBuilder.build();
+    }
+
 }

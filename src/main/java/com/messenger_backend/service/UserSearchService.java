@@ -2,9 +2,10 @@ package com.messenger_backend.service;
 
 import java.util.Collections;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
+
 import com.messenger_backend.model.UserSearchEntity;
 import com.messenger_backend.search.repo.UserSearchRepo;
 
@@ -13,10 +14,6 @@ public class UserSearchService {
 	
 	@Autowired
 	UserSearchRepo userSearchRepo;
-	
-	@Autowired 
-	ElasticsearchOperations elasticsearchOperations;
-	
 	
 	public UserSearchEntity indexUser(long id, String email,String name, String phoneNumber, String country, String img) {
 		UserSearchEntity userSearch=new UserSearchEntity(id,email,name,phoneNumber,country,img);
