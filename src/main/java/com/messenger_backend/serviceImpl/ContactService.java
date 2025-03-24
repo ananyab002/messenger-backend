@@ -24,24 +24,28 @@ public class ContactService {
 	private final UserRepository userRepository;
 	
 	@Transactional
-	public ContactDTO addContact(Long userId,Long contactId) {
-UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found")); // Using RuntimeException
-        UserEntity contact = userRepository.findById(contactId)
-                .orElseThrow(() -> new RuntimeException("Contact not found")); // Using RuntimeException
+	public ContactDTO addContact(Long userId, Long contactId) {
 
-        if (contactRepository.existsByUser_UserIdAndContact_UserId(userId, contactId)) {
-            throw new RuntimeException("Contact already exists"); // Using RuntimeException
-        }
-		
-		Contact contactInfo=new Contact();
+		UserEntity user = checkIfUserExists(userId);
+		UserEntity contact = checkIfUserExists(contactId);
+
+		if (contactRepository.existsByUser_UserIdAndContact_UserId(userId, contactId)) {
+			throw new RuntimeException("Contact already exists"); // Using RuntimeException
+		}
+
+		Contact contactInfo = new Contact();
 		contactInfo.setContact(contact);
 		contactInfo.setUser(user);
-		
-		Contact savedContact= contactRepository.save(contactInfo);
-		
+
+		Contact savedContact = contactRepository.save(contactInfo);
+
 		return mapContactInfo(savedContact);
-		
+
+	}
+	
+	public UserEntity checkIfUserExists(Long userId) {
+		return userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User or Contact not found")); // Using RuntimeException
 	}
 
 	private ContactDTO mapContactInfo(Contact savedContact) {

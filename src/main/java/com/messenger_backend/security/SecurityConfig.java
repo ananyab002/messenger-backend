@@ -37,6 +37,8 @@ public class SecurityConfig {
 								.requestMatchers("/auth/**").permitAll()
 								.requestMatchers("/users/search").authenticated()
 								.requestMatchers(HttpMethod.POST, "/contacts").authenticated()
+								.requestMatchers(HttpMethod.GET, "/contacts").authenticated()
+								.requestMatchers(HttpMethod.POST,"/chat/createOrgetmessages").authenticated()
 								.anyRequest().authenticated())
 						.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 				return http.build();
