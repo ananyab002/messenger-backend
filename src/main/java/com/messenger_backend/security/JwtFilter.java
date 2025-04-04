@@ -1,5 +1,6 @@
 
 package com.messenger_backend.security;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -24,8 +25,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserService userService;
 
     private static final List<String> PUBLIC_ENDPOINTS = List.of(
-        "/auth/login", "/auth/register"
-    );
+            "/auth/login", "/auth/register");
 
     public JwtFilter(JwtUtil jwtUtil, UserService userService) {
         this.jwtUtil = jwtUtil;
@@ -35,13 +35,13 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-            String requestPath = request.getServletPath();
-            String authorizationHeader = request.getHeader("Authorization");
-            String token = null;
-            String username = null;
-            try {
-                
-                if (PUBLIC_ENDPOINTS.contains(requestPath)) {
+        String requestPath = request.getServletPath();
+        String authorizationHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
+        try {
+
+            if (PUBLIC_ENDPOINTS.contains(requestPath)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -51,18 +51,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 username = jwtUtil.extractUsername(token);
             }
 
-            System.out.println("Extracted Token: " + token);
-            System.out.println("Extracted Username: " + username);
-
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 var userDetails = userService.loadUserByUsername(username);
-
-                //     if (jwtUtil.isTokenExpired(token)) {  // Explicit check
-                //         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                //         response.setContentType("application/json");
-                //         response.getWriter().write("{\"message\":\"Token expired\",\"status\":\"UNAUTHORIZED\"}");
-                //         return;
-                // }
 
                 if (jwtUtil.validateToken(token, userDetails)) {
                     var authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
@@ -74,15 +64,15 @@ public class JwtFilter extends OncePerRequestFilter {
                     response.getWriter().write("{\"message\":\"Token invalid\",\"status\":\"UNAUTHORIZED\"}");
                     return;
                 }
-            } 
+            }
         } catch (ExpiredJwtException ex) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"message\":\"Token expired\",\"status\":\"UNAUTHORIZED\"}");
-                        return;
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\":\"Token expired\",\"status\":\"UNAUTHORIZED\"}");
+            return;
 
         }
 
-            filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
 }

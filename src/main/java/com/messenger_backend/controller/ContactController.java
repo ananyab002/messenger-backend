@@ -1,4 +1,5 @@
 package com.messenger_backend.controller;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -16,41 +17,39 @@ import com.messenger_backend.serviceImpl.ContactService;
 
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("contacts")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
 public class ContactController {
 
-    
-     private final ContactService contactService;
+    private final ContactService contactService;
 
     @PostMapping
     public ResponseEntity<?> addContact(
             @RequestParam Long userId,
             @RequestParam Long contactId) {
-        System.out.println(userId + "" + contactId);
+
         try {
-            ContactDTO contact=contactService.addContact(userId, contactId);
+            ContactDTO contact = contactService.addContact(userId, contactId);
             return ResponseEntity.ok(contact);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/getContacts/{userId}")
     public ResponseEntity<Object> getAllContacts(@PathVariable Long userId) {
-        try{
+        try {
             List<ContactDTO> allContacts = contactService.getAllContacts(userId);
-        if (!allContacts.isEmpty())
-            return ResponseEntity.ok(allContacts);
-        else
-            return ResponseEntity.ok(allContacts);
-    } catch (Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong");
+            if (!allContacts.isEmpty())
+                return ResponseEntity.ok(allContacts);
+            else
+                return ResponseEntity.ok(allContacts);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong");
         }
-        
+
     }
-    
+
 }

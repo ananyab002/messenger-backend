@@ -38,7 +38,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(userName)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 *60))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 *60*60))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -78,5 +78,14 @@ public class JwtUtil {
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+        public Boolean validateToken(String token) {
+        try {
+            extractAllClaims(token); // If parsing succeeds, token is valid
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false; // Invalid or expired token
+        }
     }
 }

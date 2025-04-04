@@ -3,6 +3,8 @@ package com.messenger_backend.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,16 +33,17 @@ public class Chat {
     private Long chatId;
 
     @ManyToOne
-    @JoinColumn(name = "sender_id", nullable = false)
-    private UserEntity sender;
+    @JoinColumn(name = "user1_id", nullable = false)
+    private UserEntity user1;
 
     @ManyToOne
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private UserEntity receiver;
+    @JoinColumn(name = "user2_id", nullable = false)
+    private UserEntity user2;
 
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("chat")
     private List<Message> messages;
 
     @Column(nullable = false)

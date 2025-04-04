@@ -1,17 +1,18 @@
 package com.messenger_backend.service;
 
-import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequestDTO {
+ public class MessageDTO {
+    private Long msgId;
     private Long chatId;
     private String content;
     private Long senderId;
-    private Long receiverId;
-}
+    private LocalDateTime sentAt;
+    private Boolean isRead;
+    
+} 

@@ -27,66 +27,65 @@ public class UserController {
 
     @Autowired
     private UserService userservice;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
-    @Autowired 
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserEntity userData) {
         UserEntity data = userservice.registerUser(userData);
-        Map<String,String> message=new HashMap<>();
+        Map<String, String> message = new HashMap<>();
         message.put("message", "User already exists. Please login!");
         if (data != null) {
             return new ResponseEntity<>(data, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(message,HttpStatus.CONFLICT);
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         }
     }
-    
+
     @PostMapping("/login")
-    public ResponseEntity<Object> loginUser(@RequestBody LoginRequest loginData){
-    	
-    	String email=loginData.getEmail();
-    	String password=loginData.getPassword();
-    	
-    	Optional<UserEntity> optionalUser = userRepository.findByEmail(email);
-    	Map<String,String> message=new HashMap<>();
-    	if(optionalUser.isEmpty()) { 
-    		 message.put("message", "User not found. Please check your email or register");
-    		return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
-    	}
-    	
-    		UserEntity userData=optionalUser.get();
-    		System.out.println(userData.getPassword());
-    		if(!(passwordEncoder.matches(password,userData.getPassword()))) {
-    			
-    			message.put("message","Incorrect password. Please try again.");
-    		return new ResponseEntity<>(message, HttpStatus.UNAUTHORIZED);
-    	}
-    		System.out.println(email);
-    		
-    		String newToken= jwtUtil.generateToken(email);
-    		System.out.println(newToken);
-    		Map<String,Object> token=new HashMap<>();
-    		token.put("token", newToken);
-    		token.put("userData", userData);
-    		return  ResponseEntity.ok(token);
-    		
-    }
-    
- /*  @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        try {
-            userservice.deleteUserById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);  // 204 - No Content
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // 404 - Not Found
+    public ResponseEntity<Object> loginUser(@RequestBody LoginRequest loginData) {
+
+        String email = loginData.getEmail();
+        String password = loginData.getPassword();
+
+        Optional<UserEntity> optionalUser = userRepository.findByEmail(email);
+        Map<String, String> message = new HashMap<>();
+        if (optionalUser.isEmpty()) {
+            message.put("message", "User not found. Please check your email or register");
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
         }
-    }*/
+
+        UserEntity userData = optionalUser.get();
+        if (!(passwordEncoder.matches(password, userData.getPassword()))) {
+
+            message.put("message", "Incorrect password. Please try again.");
+            return new ResponseEntity<>(message, HttpStatus.UNAUTHORIZED);
+        }
+
+        String newToken = jwtUtil.generateToken(email);
+        Map<String, Object> token = new HashMap<>();
+        token.put("token", newToken);
+        token.put("userData", userData);
+        return ResponseEntity.ok(token);
+
+    }
+
+    /*
+     * @DeleteMapping("/{id}")
+     * public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+     * try {
+     * userservice.deleteUserById(id);
+     * return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 - No Content
+     * } catch (Exception e) {
+     * return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 - Not Found
+     * }
+     * }
+     */
 }

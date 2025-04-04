@@ -18,31 +18,37 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContactService {
 
-
 	private final ContactRepository contactRepository;
 
 	private final UserRepository userRepository;
-	
+
 	@Transactional
 	public ContactDTO addContact(Long userId, Long contactId) {
+
+		if (userId.equals(contactId)) {
+			throw new IllegalArgumentException("Cannot add yourself as a contact");
+		}
 
 		UserEntity user = checkIfUserExists(userId);
 		UserEntity contact = checkIfUserExists(contactId);
 
-		if (contactRepository.existsByUser_UserIdAndContact_UserId(userId, contactId)) {
-			throw new RuntimeException("Contact already exists"); // Using RuntimeException
+		Contact existingContact = contactRepository
+				.findByUser_UserIdAndContact_UserId(userId, contactId)
+				.orElse(null);
+
+		System.out.println("Existing contact" + existingContact);
+		if (existingContact == null) {
+			Contact contactInfo = new Contact();
+			contactInfo.setContact(contact);
+			contactInfo.setUser(user);
+			existingContact = contactRepository.save(contactInfo);
+			return mapContactInfo(existingContact);
 		}
 
-		Contact contactInfo = new Contact();
-		contactInfo.setContact(contact);
-		contactInfo.setUser(user);
-
-		Contact savedContact = contactRepository.save(contactInfo);
-
-		return mapContactInfo(savedContact);
+		return null;
 
 	}
-	
+
 	public UserEntity checkIfUserExists(Long userId) {
 		return userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User or Contact not found")); // Using RuntimeException
@@ -60,10 +66,10 @@ public class ContactService {
 				.createdAt(savedContact.getCreatedAt())
 				.build();
 	}
-	
+
 	public List<ContactDTO> getAllContacts(long userId) {
 		return contactRepository.findByUser_UserId(userId).stream()
-		.map(contact-> mapContactInfo(contact))
-		.collect(Collectors.toList());
+				.map(contact -> mapContactInfo(contact))
+				.collect(Collectors.toList());
 	}
 }
