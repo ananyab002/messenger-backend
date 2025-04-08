@@ -18,52 +18,54 @@ import com.messenger_backend.service.UserService;
 @Configuration
 public class SecurityConfig {
 
-	 private final JwtFilter jwtFilter;
-	    private final UserService userService;
-	    private final PasswordEncoder passwordEncoder;
+	private final JwtFilter jwtFilter;
+	private final UserService userService;
+	private final PasswordEncoder passwordEncoder;
 
-	    public SecurityConfig(JwtFilter jwtFilter, UserService userService, PasswordEncoder passwordEncoder) {
-	        this.jwtFilter = jwtFilter;
-	        this.userService = userService;
-	        this.passwordEncoder = passwordEncoder;
-	    }
+	public SecurityConfig(JwtFilter jwtFilter, UserService userService, PasswordEncoder passwordEncoder) {
+		this.jwtFilter = jwtFilter;
+		this.userService = userService;
+		this.passwordEncoder = passwordEncoder;
+	}
 
-		    @Bean
-			public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-				http
-						.csrf(csrf -> csrf.disable())
-						.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-						.authorizeHttpRequests(auth -> auth
-								.requestMatchers("/auth/**").permitAll()
-								.requestMatchers("/users/search").authenticated()
-								.requestMatchers(HttpMethod.POST, "/contacts").authenticated()
-								.requestMatchers(HttpMethod.GET, "/contacts").authenticated()
-								.requestMatchers(HttpMethod.POST, "/chat/createOrgetmessages").authenticated()
-								.requestMatchers("/message/**").permitAll() 
-								.anyRequest().authenticated())
-						.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-				return http.build();
-			}
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+				.csrf(csrf -> csrf.disable())
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/auth/**").permitAll()
+						.requestMatchers("/users/search").authenticated()
+						.requestMatchers(HttpMethod.POST, "/contacts").authenticated()
+						.requestMatchers(HttpMethod.GET, "/contacts").authenticated()
+						.requestMatchers(HttpMethod.POST, "/chat/createOrgetmessages").authenticated()
+						.requestMatchers(HttpMethod.POST, "/messageEmojiReaction").authenticated()
+						.requestMatchers("/message/**").permitAll()
+						.anyRequest().authenticated())
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+		return http.build();
+	}
 
-	    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true);
-          configuration.addAllowedOriginPattern("http://localhost:5173"); 
-        configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowCredentials(true);
+		configuration.addAllowedOriginPattern("http://localhost:5173");
+		configuration.addAllowedHeader("*");
+		configuration.addAllowedMethod("*");
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
 
-	    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder
-            .userDetailsService(userService)
-            .passwordEncoder(passwordEncoder);
-        return authenticationManagerBuilder.build();
-    }
+	@Bean
+	public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+		AuthenticationManagerBuilder authenticationManagerBuilder = http
+				.getSharedObject(AuthenticationManagerBuilder.class);
+		authenticationManagerBuilder
+				.userDetailsService(userService)
+				.passwordEncoder(passwordEncoder);
+		return authenticationManagerBuilder.build();
+	}
 
 }

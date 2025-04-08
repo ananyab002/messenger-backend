@@ -43,6 +43,8 @@ public class Message {
 
     private LocalDateTime sentAt;
 
+    private String emojiReaction;
+
     @Column(nullable = false)
     private Boolean isRead;
 }

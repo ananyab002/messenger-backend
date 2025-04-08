@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,6 +67,49 @@ public class MessageController {
                 status = HttpStatus.BAD_REQUEST;
             }
 
+            return ResponseEntity.status(status).body(e.getMessage());
+        }
+
+    }
+
+    @MessageMapping("/reaction/{messageId}/{emoji}")
+    public ResponseEntity<Object> saveEmojiReaction(@DestinationVariable Long messageId,
+            @DestinationVariable String emoji) {
+        try {
+            MessageDTO messageDTO = messageServiceImpl.saveEmojiReaction(messageId, emoji);
+            simpMessagingTemplate.convertAndSend("/topic/chats/" + messageDTO.getChatId() + "/emojiReactions",
+                    messageDTO);
+            return ResponseEntity.ok(messageDTO);
+
+        } catch (RuntimeException e) {
+            HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e.getMessage().contains("not found")) {
+                status = HttpStatus.NOT_FOUND;
+            } else if (e.getMessage().contains("Invalid")) {
+                status = HttpStatus.BAD_REQUEST;
+            }
+            return ResponseEntity.status(status).body(e.getMessage());
+        }
+
+    }
+
+    @MessageMapping("/delete/{messageId}")
+    public ResponseEntity<Object> deleteMessage(@DestinationVariable Long messageId) {
+        try {
+            Message message = messageRepository.findById(messageId)
+                    .orElseThrow(() -> new RuntimeException("Message not found"));
+            messageRepository.delete(message);
+            simpMessagingTemplate.convertAndSend("/topic/chats/" + message.getChat().getChatId() + "/deletion",
+                    message);
+            return ResponseEntity.ok(messageId);
+
+        } catch (RuntimeException e) {
+            HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e.getMessage().contains("not found")) {
+                status = HttpStatus.NOT_FOUND;
+            } else if (e.getMessage().contains("Invalid")) {
+                status = HttpStatus.BAD_REQUEST;
+            }
             return ResponseEntity.status(status).body(e.getMessage());
         }
 

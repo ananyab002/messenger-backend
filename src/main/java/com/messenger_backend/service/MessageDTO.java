@@ -7,12 +7,13 @@ import lombok.Data;
 
 @Data
 @Builder
- public class MessageDTO {
+public class MessageDTO {
     private Long msgId;
     private Long chatId;
     private String content;
     private Long senderId;
     private LocalDateTime sentAt;
     private Boolean isRead;
-    
-} 
+    private String emojiReaction;
+
+}
