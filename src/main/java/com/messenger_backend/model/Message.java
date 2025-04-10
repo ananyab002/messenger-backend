@@ -45,6 +45,10 @@ public class Message {
 
     private String emojiReaction;
 
+    @ManyToOne
+    @JoinColumn(name = "replied_to_msg_id")
+    private Message repliedTo;
+
     @Column(nullable = false)
     private Boolean isRead;
 }

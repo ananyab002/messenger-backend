@@ -47,6 +47,11 @@ public class MessageController {
                     .sender(userEntity)
                     .isRead(false)
                     .build();
+            if (messageRequestDTO.getRepliedToMsgId() != null) {
+                Message repliedToMessage = messageRepository.findById(messageRequestDTO.getRepliedToMsgId())
+                        .orElseThrow(() -> new RuntimeException("Message not found"));
+                message.setRepliedTo(repliedToMessage);
+            }
 
             messageRepository.save(message);
             MessageDTO messageDTO = messageServiceImpl.mapOfMessageDTO(message, userEntity);
@@ -54,12 +59,13 @@ public class MessageController {
                     messageRequestDTO.getSenderId());
 
             simpMessagingTemplate.convertAndSend("/topic/chats/" + chat.getChatId(), messageDTO);
-            simpMessagingTemplate.convertAndSend("/topic/contacts/" + messageRequestDTO.getReceiverId(), contactDTO);
+            if (contactDTO != null) {
+                simpMessagingTemplate.convertAndSend("/topic/contacts/" + messageRequestDTO.getReceiverId(),
+                        contactDTO);
+            }
 
             return ResponseEntity.status(HttpStatus.OK).body(messageDTO);
         } catch (RuntimeException e) {
-
-            // Return appropriate status based on error type
             HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e.getMessage().contains("not found")) {
                 status = HttpStatus.NOT_FOUND;

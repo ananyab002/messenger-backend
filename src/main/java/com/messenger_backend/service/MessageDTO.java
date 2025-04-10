@@ -15,5 +15,6 @@ public class MessageDTO {
     private LocalDateTime sentAt;
     private Boolean isRead;
     private String emojiReaction;
-
+    private Long repliedToMsgId;
+    private String repliedToMsgContent;
 }

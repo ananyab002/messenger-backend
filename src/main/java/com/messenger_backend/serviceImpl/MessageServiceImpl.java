@@ -37,6 +37,7 @@ public class MessageServiceImpl {
     }
 
     public MessageDTO mapOfMessageDTO(Message message, UserEntity userEntity) {
+        Message repliedToMessage = message.getRepliedTo();
         return MessageDTO.builder()
                 .chatId(message.getChat().getChatId())
                 .content(message.getContent())
@@ -45,6 +46,9 @@ public class MessageServiceImpl {
                 .sentAt(message.getSentAt())
                 .isRead(message.getIsRead())
                 .emojiReaction(message.getEmojiReaction())
+                .repliedToMsgId(
+                        repliedToMessage != null ? repliedToMessage.getMsgId() : null)
+                .repliedToMsgContent(repliedToMessage != null ? repliedToMessage.getContent() : null)
                 .build();
     }
 
